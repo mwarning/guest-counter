@@ -12,19 +12,22 @@ DEVICE_NAME=""
 ###############################################################################
 
 if [ $DEVICE_AGE_HOURS -ge $DEVICE_TIMEOUT_HOURS ]; then
-  echo "$0: DEVICE_AGE_HOURS ($DEVICE_AGE_HOURS) must be lower DEVICE_TIMEOUT_HOURS ($DEVICE_TIMEOUT_HOURS)" >&2
+  echo "$0: DEVICE_AGE_HOURS ($DEVICE_AGE_HOURS) must be lower or equal DEVICE_TIMEOUT_HOURS ($DEVICE_TIMEOUT_HOURS)" >&2
   exit 1
 fi
 
 # lines of "<mac_addr> <first_seen> <last_seen>""
-FILE="/tmp/guest_counter.db"
+db_file="/tmp/guest_counter.db"
 now=$(date +%s)
 age=$((now - 60 * 60 * DEVICE_AGE_HOURS))
 timeout=$((now - 60 * 60 * DEVICE_TIMEOUT_HOURS))
-old_entries="$(cat $FILE 2> /dev/null)"
-cur_mac_addrs="$(ip neighbor show ${DEVICE_NAME:+dev DEVICE_NAME} | cut -s -d' ' -f5)"
+old_entries="$(cat $db_file 2> /dev/null)"
 new_entries=""
 count=0
+
+# Fetch list of current MAC addresses
+cur_addrs="$(ip neigh show ${DEVICE_NAME:+dev DEVICE_NAME} | cut -s -d' ' -f5)"
+#cur_addrs="$(cat /var/lib/dhcpd/dhcpd.leases ...)"
 
 handle_entry() {
   local multiple=$1
@@ -53,7 +56,8 @@ handle_entry() {
 # Split by newline
 IFS="
 "
-for entry in $( (echo "$cur_mac_addrs"; echo "$old_entries";) | sort -r | uniq -c -w 17)
+
+for entry in $( (echo "$cur_addrs"; echo "$old_entries";) | sort -r | uniq -c -w 17)
 do
   # Split by space
   IFS=" "
@@ -62,7 +66,7 @@ do
 done
 
 # Backup entries for next call
-echo -n "$new_entries" > $FILE
+echo -n "$new_entries" > $db_file
 
 echo $count
 
