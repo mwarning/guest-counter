@@ -13,7 +13,7 @@ This cronjob entry will call the script every 5 minutes and write the number of 
 
 The script maintains a database in `/tmp/guest_counter.db` to track all devices.
 
-Guest devices are not online for more than 8 hours straight.
-That is why you have to let the script run for that time to be able to detect servers and routers.
-Devices that has not been seen for 12 hours, will be removed from the database.
+Counted are devices that are online for less then 8 hours.
+That is why you have to let the script run for that time to be able to exclude servers and routers from being counted as guests.
+Devices that has not been seen for 12 hours, will be removed from the database entirely.
 These values are configurable.
