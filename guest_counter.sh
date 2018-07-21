@@ -29,7 +29,7 @@ new_entries=""
 count=0
 
 
-case $DEVICE_SOURCE in
+case "$DEVICE_SOURCE" in
   "dhcp")
     # Fetch list of current MAC addresses from DHCP lease file
     dev_ids="$(cat /var/lib/dhcpd/dhcpd.leases | cut -s -d' ' -f2)"
