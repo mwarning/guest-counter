@@ -8,10 +8,10 @@ Put `count_guests.sh` somewhere on your gateway and call it every few minutes.
 This cronjob entry will call the script every 5 minutes and write the number of guest to `/tmp/guests.txt`:
 
 ```
-*/5 * * * * /usr/sbin/guests.sh | wc -l > /tmp/guests.txt
+*/5 * * * * /usr/sbin/guest_counter.sh > /tmp/guests.txt
 ```
 
-The script maintains a database in `/tmp/devices.txt` to track all devices.
+The script maintains a database in `/tmp/guest_counter.db` to track all devices.
 
 Guest devices are not online for more than 8 hours straight.
 Devices that has not been seen for 12 hours, will be removed from the database.

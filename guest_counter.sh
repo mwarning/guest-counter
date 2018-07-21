@@ -13,7 +13,7 @@ if [ $DEVICE_AGE_HOURS -gt $DEVICE_TIMEOUT_HOURS ]; then
 fi
 
 # lines of "<mac_addr> <first_seen> <last_seen>""
-FILE="/tmp/entries.txt"
+FILE="/tmp/guest_counter.db"
 now=$(date +%s)
 age=$((now - 60 * 60 * DEVICE_AGE_HOURS))
 timeout=$((now - 60 * 60 * DEVICE_TIMEOUT_HOURS))
