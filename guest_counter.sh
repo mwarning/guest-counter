@@ -49,16 +49,21 @@ case "$DEVICE_SOURCE" in
 esac
 
 handle_entry() {
-  local multiple=$1
-  local dev_id=$2
-  local first_seen=${3:-$now}
-  local last_seen=${4:-$now}
+  local dev_id=$1
+  local first_seen=${2:-$now}
+  local last_seen=${3:-$now}
+  local tmp
 
-  # Multiple entries mean the entry is from
-  # the device list and database => active device
-  if [ $multiple -gt 1 ]; then
-    last_seen=$now
-  fi
+  # Split by newline
+  IFS="
+"
+
+  for tmp in $dev_ids; do
+    if [ "$tmp" = "$dev_id" ]; then
+      last_seen=$now
+      break
+    fi
+  done
 
   # Only handle devices that did not timeout and the device id is not empty
   if [ $last_seen -gt $timeout -a -n "$dev_id" ]; then
@@ -77,7 +82,7 @@ handle_entry() {
 IFS="
 "
 
-for entry in $((echo "$dev_ids"; echo "$old_entries";) | sort -r | uniq -c -w 17)
+for entry in $((echo "$dev_ids"; echo "$old_entries";) | sort -r -u -t' ' -k1,1)
 do
   # Split by space
   IFS=" "
