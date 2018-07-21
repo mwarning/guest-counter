@@ -26,7 +26,7 @@ Options can be set at the top of the script.
   Default: 12
 
 * `IF_NAME`  
-  Interface name. E.g. eth0.  
+  Interface name. E.g. `eth0`.  
   Default: 12
 
 * `DEVICE_SOURCE`  
@@ -35,4 +35,4 @@ Options can be set at the top of the script.
 
 ## Notes
 
-The script has to be run at least DEVICE_AGE_HOURS to be able to exclude servers and routers from being counted as guests.
+The script has to be run at least `DEVICE_AGE_HOURS` hours to be able to exclude servers and routers from being counted as guests.
