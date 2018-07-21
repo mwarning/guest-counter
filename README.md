@@ -13,7 +13,26 @@ This cronjob entry for `/etc/crontab` will call the script every 5 minutes and w
 
 The script maintains a database in `/tmp/guest_counter.db` to track all devices.
 
-Counted are devices that are online for less than 8 hours.
-That is why you have to let the script run for that time to be able to exclude servers and routers from being counted as guests.
-Devices that has not been seen for 12 hours, will be removed from the database entirely.
-These values are configurable.
+## Options
+
+Options can be set at the top of the script.
+
+* `DEVICE_AGE_HOURS`  
+  Count devices that are less than n hours old.  
+  Default: 8
+
+* `DEVICE_TIMEOUT_HOURS`  
+  Timeout devices that are more than n hours old.  
+  Default: 12
+
+* `IF_NAME`  
+  Interface name. E.g. eth0.  
+  Default: 12
+
+* `DEVICE_SOURCE`  
+  Source for the list of devices on the network. `neigh` for neighbor cache like ARP. `nmap` for network scanning or `dhcp` for reading the DHCP lease file.  
+  Default: nmap
+
+## Notes
+
+The script has to be run at least DEVICE_AGE_HOURS to be able to exclude servers and routers from being counted as guests.

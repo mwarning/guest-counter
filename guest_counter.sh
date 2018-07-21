@@ -6,8 +6,11 @@ DEVICE_AGE_HOURS=8
 # Timeout devices that are more than 12 hours old
 DEVICE_TIMEOUT_HOURS=12
 
-# Device name, e.g. "eth0"
-DEVICE_NAME=""
+# Interface name, e.g. "eth0"
+IF_NAME=""
+
+# Device list source "neigh", "nmap" or "dhcp"
+DEVICE_SOURCE="neigh"
 
 ###############################################################################
 
@@ -16,7 +19,7 @@ if [ $DEVICE_AGE_HOURS -ge $DEVICE_TIMEOUT_HOURS ]; then
   exit 1
 fi
 
-# lines of "<mac_addr> <first_seen> <last_seen>""
+# lines of "<dev_id> <first_seen> <last_seen>""
 db_file="/tmp/guest_counter.db"
 now=$(date +%s)
 age=$((now - 60 * 60 * DEVICE_AGE_HOURS))
@@ -25,13 +28,29 @@ old_entries="$(cat $db_file 2> /dev/null)"
 new_entries=""
 count=0
 
-# Fetch list of current MAC addresses
-cur_addrs="$(ip neigh show ${DEVICE_NAME:+dev DEVICE_NAME} | cut -s -d' ' -f5)"
-#cur_addrs="$(cat /var/lib/dhcpd/dhcpd.leases ...)"
+
+case $DEVICE_SOURCE in
+  "dhcp")
+    # Fetch list of current MAC addresses from DHCP lease file
+    dev_ids="$(cat /var/lib/dhcpd/dhcpd.leases | cut -s -d' ' -f2)"
+    ;;
+  "neigh")
+    # Fetch list of current MAC addresses from neighbor list cache
+    dev_ids="$(ip neigh show ${IF_NAME:+dev IF_NAME} | cut -s -d' ' -f5)"
+    ;;
+  "nmap")
+    # Fetch list of current IP addresses via ping scan
+    dev_ids="$(nmap -sn $(ip -4 a l ${IF_NAME:+dev IF_NAME} | awk '/inet/{print($2)}') | awk '/Nmap scan report for/{print($5)}')"
+    ;;
+  *)
+    echo "$0: DEVICE_SOURCE ($DEVICE_SOURCE) is invalid." >&2
+    exit 1;
+    ;;
+esac
 
 handle_entry() {
   local multiple=$1
-  local mac_addr=$2
+  local dev_id=$2
   local first_seen=${3:-$now}
   local last_seen=${4:-$now}
 
@@ -40,15 +59,15 @@ handle_entry() {
     last_seen=$now
   fi
 
-  # Only handle devices that did not timeout and have a mac addr of valid length
-  if [ $last_seen -gt $timeout -a ${#mac_addr} -eq 17 ]; then
+  # Only handle devices that did not timeout and the device id is not empty
+  if [ $last_seen -gt $timeout -a -n "$dev_id" ]; then
     # Only count active devices that are younger than a certain age
     if [ $last_seen -eq $now -a $first_seen -gt $age ]; then
       count=$((count + 1))
     fi
 
     # Append entry
-    new_entries+="$mac_addr $first_seen $last_seen
+    new_entries+="$dev_id $first_seen $last_seen
 "
   fi
 }
@@ -57,7 +76,7 @@ handle_entry() {
 IFS="
 "
 
-for entry in $( (echo "$cur_addrs"; echo "$old_entries";) | sort -r | uniq -c -w 17)
+for entry in $((echo "$dev_ids"; echo "$old_entries";) | sort -r | uniq -c -w 17)
 do
   # Split by space
   IFS=" "
