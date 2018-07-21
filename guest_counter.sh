@@ -6,6 +6,9 @@ DEVICE_AGE_HOURS=8
 # Timeout devices that are more than 12 hours old
 DEVICE_TIMEOUT_HOURS=12
 
+# Device name, e.g. "eth0"
+DEVICE=""
+
 
 if [ $DEVICE_AGE_HOURS -gt $DEVICE_TIMEOUT_HOURS ]; then
   echo "$0: DEVICE_AGE_HOURS ($DEVICE_AGE_HOURS) must be lower DEVICE_TIMEOUT_HOURS ($DEVICE_TIMEOUT_HOURS)" >&2
@@ -48,7 +51,7 @@ handle_entry() {
 # Split by newline
 IFS="
 "
-for entry in $( (ip neighbor show | cut -s -d' ' -f5; echo $cur_entries;) | sort -r | uniq -c -w 17)
+for entry in $( (ip neighbor show ${DEVICE:+dev DEVICE} | cut -s -d' ' -f5; echo $cur_entries;) | sort -r | uniq -c -w 17)
 do
   # Split by space
   IFS=" "
