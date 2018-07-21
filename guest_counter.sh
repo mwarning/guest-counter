@@ -7,10 +7,11 @@ DEVICE_AGE_HOURS=8
 DEVICE_TIMEOUT_HOURS=12
 
 # Device name, e.g. "eth0"
-DEVICE=""
+DEVICE_NAME=""
 
+###############################################################################
 
-if [ $DEVICE_AGE_HOURS -gt $DEVICE_TIMEOUT_HOURS ]; then
+if [ $DEVICE_AGE_HOURS -ge $DEVICE_TIMEOUT_HOURS ]; then
   echo "$0: DEVICE_AGE_HOURS ($DEVICE_AGE_HOURS) must be lower DEVICE_TIMEOUT_HOURS ($DEVICE_TIMEOUT_HOURS)" >&2
   exit 1
 fi
@@ -20,7 +21,6 @@ FILE="/tmp/guest_counter.db"
 now=$(date +%s)
 age=$((now - 60 * 60 * DEVICE_AGE_HOURS))
 timeout=$((now - 60 * 60 * DEVICE_TIMEOUT_HOURS))
-cur_entries="$(cat $FILE 2> /dev/null)"
 new_entries=""
 count=0
 
@@ -37,12 +37,12 @@ handle_entry() {
 
   # Only handle devices that did not timeout and have a mac addr of valid length
   if [ $last_seen -gt $timeout -a ${#mac_addr} -eq 17 ]; then
-    # Only output active devices that are younger than a certain age
+    # Only count active devices that are younger than a certain age
     if [ $last_seen -eq $now -a $first_seen -gt $age ]; then
       count=$((count + 1))
     fi
 
-    # Append new entry
+    # Append entry
     new_entries+="$mac_addr $first_seen $last_seen
 "
   fi
@@ -51,7 +51,7 @@ handle_entry() {
 # Split by newline
 IFS="
 "
-for entry in $( (ip neighbor show ${DEVICE:+dev DEVICE} | cut -s -d' ' -f5; echo $cur_entries;) | sort -r | uniq -c -w 17)
+for entry in $( (ip neighbor show ${DEVICE_NAME:+dev DEVICE_NAME} | cut -s -d' ' -f5; cat $FILE 2> /dev/null;) | sort -r | uniq -c -w 17)
 do
   # Split by space
   IFS=" "
