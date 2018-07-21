@@ -54,7 +54,8 @@ handle_entry() {
   local first_seen=${3:-$now}
   local last_seen=${4:-$now}
 
-  # Multiple entries mean the entry got from iptools => active device
+  # Multiple entries mean the entry is from
+  # the device list and database => active device
   if [ $multiple -gt 1 ]; then
     last_seen=$now
   fi
