@@ -21,6 +21,8 @@ FILE="/tmp/guest_counter.db"
 now=$(date +%s)
 age=$((now - 60 * 60 * DEVICE_AGE_HOURS))
 timeout=$((now - 60 * 60 * DEVICE_TIMEOUT_HOURS))
+old_entries="$(cat $FILE 2> /dev/null)"
+cur_mac_addrs="$(ip neighbor show ${DEVICE_NAME:+dev DEVICE_NAME} | cut -s -d' ' -f5)"
 new_entries=""
 count=0
 
@@ -51,7 +53,7 @@ handle_entry() {
 # Split by newline
 IFS="
 "
-for entry in $( (ip neighbor show ${DEVICE_NAME:+dev DEVICE_NAME} | cut -s -d' ' -f5; cat $FILE 2> /dev/null;) | sort -r | uniq -c -w 17)
+for entry in $( (echo "$cur_mac_addrs"; echo "$old_entries";) | sort -r | uniq -c -w 17)
 do
   # Split by space
   IFS=" "
