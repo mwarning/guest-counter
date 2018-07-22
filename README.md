@@ -30,8 +30,8 @@ Options can be set at the top of the script.
   Default: 12
 
 * `DEVICE_SOURCE`  
-  Source for the list of devices on the network. `neigh` for neighbor cache like ARP. `nmap` for network scanning or `dhcp` for reading the DHCP lease file.  
-  Default: nmap
+  Source for the list of devices on the network. `neigh` for using neighbor cache like ARP. `nmap` for network scanning or `dhcp` for reading the DHCP lease file.  
+  Default: `neigh`
 
 ## Notes
 
