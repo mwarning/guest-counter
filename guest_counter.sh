@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# This script tracks and counts clients on the network. Devices that turn out
+# to be persistent, such as servers, will be omitted from being counted.
+
 # Count devices that are less than 8 hours old
 DEVICE_AGE_HOURS=8
 
