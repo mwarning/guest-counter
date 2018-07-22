@@ -18,7 +18,7 @@ The script maintains a database in `/tmp/guest_counter.db` to track all devices.
 Options can be set at the top of the script.
 
 * `DEVICE_AGE_HOURS`  
-  Count devices that are less than n hours old.  
+  Count devices are in the network for less than n hours.  
   Default: 8
 
 * `IF_NAME`  
