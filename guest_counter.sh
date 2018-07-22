@@ -63,11 +63,6 @@ handle_entry() {
   local dev_id=$2
   local first_seen=${3:-$now}
   local last_seen=${4:-$now}
-  local tmp
-
-  # Split by newline
-  IFS="
-"
 
   if [ $multiple -ne 1 ]; then
     last_seen=$now
