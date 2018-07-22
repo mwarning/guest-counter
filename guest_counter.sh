@@ -6,9 +6,6 @@
 # Count devices that are less than 8 hours old
 DEVICE_AGE_HOURS=8
 
-# Timeout devices that are more than 12 hours old
-DEVICE_TIMEOUT_HOURS=12
-
 # Interface name, e.g. "eth0"
 IF_NAME=""
 
@@ -17,8 +14,8 @@ DEVICE_SOURCE="neigh"
 
 ###############################################################################
 
-if [ $DEVICE_AGE_HOURS -ge $DEVICE_TIMEOUT_HOURS ]; then
-  echo "$0: DEVICE_AGE_HOURS ($DEVICE_AGE_HOURS) must be lower or equal DEVICE_TIMEOUT_HOURS ($DEVICE_TIMEOUT_HOURS)" >&2
+if [ -z "$DEVICE_AGE_HOURS" ]; then
+  echo "$0: DEVICE_AGE_HOURS is empty." >&2
   exit 1
 fi
 
@@ -26,11 +23,11 @@ fi
 db_file="/tmp/guest_counter.db"
 now=$(date +%s)
 age=$((now - 60 * 60 * DEVICE_AGE_HOURS))
-timeout=$((now - 60 * 60 * DEVICE_TIMEOUT_HOURS))
 old_entries="$(cat $db_file 2> /dev/null)"
 new_entries=""
 dev_ids=""
 count=0
+NL="$(echo)"
 
 
 case "$DEVICE_SOURCE" in
@@ -59,37 +56,36 @@ case "$DEVICE_SOURCE" in
 esac
 
 handle_entry() {
-  local multiple=$1
-  local dev_id=$2
-  local first_seen=${3:-$now}
-  local last_seen=${4:-$now}
+  local dev_id=$1
+  local first_seen=${2:-$now}
+  local last_seen=${3:-$now}
 
-  if [ $multiple -ne 1 ]; then
-    last_seen=$now
-  fi
+  IFS="$NL"
+  for line in $old_entries; do
+    if [ "$dev_id" = "${line:0:17}" ]; then
+      last_seen=$now
+      break
+    fi
+  done
 
-  # Only handle devices that did not timeout and the device id is as long as a MAC address
-  if [ $last_seen -gt $timeout -a ${#dev_id} -eq 17 ]; then
+  # Only handle present devices
+  if [ ${#dev_id} -eq 17 -a $last_seen -eq $now ]; then
     # Only count active devices that are younger than a certain age
-    if [ $last_seen -eq $now -a $first_seen -gt $age ]; then
+    if [ $first_seen -gt $age ]; then
       count=$((count + 1))
     fi
 
-    # Append entry
-    new_entries+="$dev_id $first_seen $last_seen
-"
+    # Append entry as line
+    new_entries+="$dev_id $first_seen $last_seen$NL"
   fi
 }
 
 # Split by newline
-IFS="
-"
-
-for entry in $((echo "$dev_ids"; echo "$old_entries";) | sort -r | uniq -c -w 17)
+IFS="$NL"
+for entry in $((echo "$dev_ids"; echo "$old_entries";) | sort -r | uniq -w 17)
 do
   # Split by space
   IFS=" "
-
   handle_entry $entry
 done
 

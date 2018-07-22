@@ -21,10 +21,6 @@ Options can be set at the top of the script.
   Count devices that are less than n hours old.  
   Default: 8
 
-* `DEVICE_TIMEOUT_HOURS`  
-  Timeout devices that are more than n hours old.  
-  Default: 12
-
 * `IF_NAME`  
   Interface name. E.g. `eth0`.  
   Default: none
