@@ -33,7 +33,7 @@ NL="$(echo)"
 case "$DEVICE_SOURCE" in
   "dhcp")
     # Fetch list of current MAC addresses from DHCP lease file
-    dev_ids="$(cat /var/lib/dhcpd/dhcpd.leases | cut -s -d' ' -f2)"
+    dev_ids="$(cat /var/lib/dhcpd/dhcpd.leases | awk '!/^(\$|#)/{printf("%17s\n", $2)}' | tr ' ' '_')"
     ;;
   "neigh")
     # Fetch list of current MAC addresses from neighbor list cache
