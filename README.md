@@ -1,6 +1,6 @@
 # Network Guest Counter
 
-A script to count clients in your network but excludes persistent devices such as servers or routers.
+A script to count clients on your network but omits persistent devices such as servers or routers.
 This can be used as a public counter for your network, e.g. to indicate home many people are in the office. 
 
 Put `count_guests.sh` somewhere on your gateway and call it every few minutes.
@@ -18,11 +18,11 @@ The script maintains a database in `/tmp/guest_counter.db` to track all devices.
 Options can be set at the top of the script.
 
 * `DEVICE_AGE_HOURS`  
-  Count devices are in the network for less than n hours.  
+  Count devices are on the network for less than n hours.  
   Default: 8
 
 * `IF_NAME`  
-  Interface name. E.g. `eth0`.  
+  Network interface name. E.g. `eth0`.  
   Default: none
 
 * `DEVICE_SOURCE`  
@@ -30,7 +30,7 @@ Options can be set at the top of the script.
   Default: `neigh`
   * `neigh` for using neighbor cache like ARP.
   * `nmap` to scan an entire network behind `IF_NAME`.
-  * `dhcp` for reading the DHCP lease file.
+  * `dhcp` for reading a DHCP lease file.
 
 ## Notes
 
