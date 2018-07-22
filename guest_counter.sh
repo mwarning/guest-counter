@@ -26,6 +26,7 @@ age=$((now - 60 * 60 * DEVICE_AGE_HOURS))
 timeout=$((now - 60 * 60 * DEVICE_TIMEOUT_HOURS))
 old_entries="$(cat $db_file 2> /dev/null)"
 new_entries=""
+dev_ids=""
 count=0
 
 
@@ -39,8 +40,14 @@ case "$DEVICE_SOURCE" in
     dev_ids="$(ip neigh show ${IF_NAME:+dev IF_NAME} | cut -s -d' ' -f5)"
     ;;
   "nmap")
+    if [ -z "$IF_NAME" ]; then
+      echo "$0 IF_NAME not set. Needed for nmap." >&2
+      exit 1
+    fi
+
     # Fetch list of current IP addresses via ping scan
-    dev_ids="$(nmap -sn $(ip -4 a l ${IF_NAME:+dev IF_NAME} | awk '/inet/{print($2)}') | awk '/Nmap scan report for/{print($5)}')"
+    net=$(ip -4 a l dev $IF_NAME} | awk '/inet/{print($2)}')
+    dev_ids=$(nmap -n -sn $net -oG - | awk '/Up$/{printf("%17s\n", $2)}' | tr ' ' '_')
     ;;
   *)
     echo "$0: DEVICE_SOURCE ($DEVICE_SOURCE) is invalid." >&2
@@ -49,24 +56,22 @@ case "$DEVICE_SOURCE" in
 esac
 
 handle_entry() {
-  local dev_id=$1
-  local first_seen=${2:-$now}
-  local last_seen=${3:-$now}
+  local multiple=$1
+  local dev_id=$2
+  local first_seen=${3:-$now}
+  local last_seen=${4:-$now}
   local tmp
 
   # Split by newline
   IFS="
 "
 
-  for tmp in $dev_ids; do
-    if [ "$tmp" = "$dev_id" ]; then
-      last_seen=$now
-      break
-    fi
-  done
+  if [ $multiple -ne 1 ]; then
+    last_seen=$now
+  fi
 
-  # Only handle devices that did not timeout and the device id is not empty
-  if [ $last_seen -gt $timeout -a -n "$dev_id" ]; then
+  # Only handle devices that did not timeout and the device id is as long as a MAC address
+  if [ $last_seen -gt $timeout -a ${#dev_id} -eq 17 ]; then
     # Only count active devices that are younger than a certain age
     if [ $last_seen -eq $now -a $first_seen -gt $age ]; then
       count=$((count + 1))
@@ -82,7 +87,7 @@ handle_entry() {
 IFS="
 "
 
-for entry in $((echo "$dev_ids"; echo "$old_entries";) | sort -r -u -t' ' -k1,1)
+for entry in $((echo "$dev_ids"; echo "$old_entries";) | sort -r | uniq -c -w 17)
 do
   # Split by space
   IFS=" "
