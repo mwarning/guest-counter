@@ -27,13 +27,13 @@ Options can be set at the top of the script.
 
 * `IF_NAME`  
   Interface name. E.g. `eth0`.  
-  Default: 12
+  Default: none
 
 * `DEVICE_SOURCE`  
   Source for the list of devices on the network.  
   Default: `neigh`
   * `neigh` for using neighbor cache like ARP.
-  * `nmap` to scan the entire network.
+  * `nmap` to scan an entire network behind `IF_NAME`.
   * `dhcp` for reading the DHCP lease file.
 
 ## Notes
