@@ -27,8 +27,8 @@ old_entries="$(cat $db_file 2> /dev/null)"
 new_entries=""
 dev_ids=""
 count=0
-NL="$(echo)"
-
+NL="
+"
 
 case "$DEVICE_SOURCE" in
   "dhcp")
