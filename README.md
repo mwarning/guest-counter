@@ -1,7 +1,8 @@
 # Network Guest Counter
 
 A script to count clients on your network but omits persistent devices such as servers or routers.
-This can be used as a public counter for your network, e.g. to indicate home many people are in the office. 
+This can be used as a public counter for your network, e.g. to indicate home many people are in the office.
+Counted are devices that are in the network for less that a given amount of hours.
 
 Put `count_guests.sh` somewhere on your gateway and call it every few minutes.
 
